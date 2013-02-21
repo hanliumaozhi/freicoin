@@ -1989,22 +1989,6 @@ bool CBlock::ConnectBlock(CTxDB& txdb, CBlockIndex* pindex, bool fJustCheck)
     if ( qActualCoinbaseValue > qAllowedCoinbaseValue )
         return error("ConnectBlock() : coinbase pays too much (actual=%s vs limit=%s)", FormatMoney(qActualCoinbaseValue).c_str(), FormatMoney(qAllowedCoinbaseValue).c_str());
 
-    std::map<CTxDestination, mpq> mapBudget;
-
-    mpq nIDAmount = GetInitialDistributionAmount(pindex->nHeight);
-    CBudget budgetID = GetInitialDistributionBudget(pindex->nHeight);
-    ApplyBudget(nIDAmount, budgetID, mapBudget);
-
-    mpq nPSAmount = GetPerpetualSubsidyAmount(pindex->nHeight);
-    CBudget budgetPS = GetPerpetualSubsidyBudget(pindex->nHeight);
-    ApplyBudget(nPSAmount, budgetPS, mapBudget);
-
-    CBudget budgetTF = GetTransactionFeeBudget(pindex->nHeight);
-    ApplyBudget(nFees, budgetTF, mapBudget);
-
-    if (!VerifyBudget(mapBudget, vtx, pindex->nHeight))
-        return error("ConnectBlock() : block does not meet budget requirements");
-
     if (fJustCheck)
         return true;
 
@@ -2395,10 +2379,31 @@ bool CBlock::AcceptBlock()
     if (GetBlockTime() <= pindexPrev->GetMedianTimePast())
         return error("AcceptBlock() : block's timestamp is too early");
 
-    // Check that all transactions are finalized
-    BOOST_FOREACH(const CTransaction& tx, vtx)
+    // Check that all transactions are finalized, and accumulate maximum
+    // collectable transaction fees
+    mpq nFees = 0;
+    CTxDB txdb("r");
+    MapPrevTx mapBlockTx;
+    BOOST_FOREACH(const CTransaction& tx, vtx) {
         if (!tx.IsFinal(nHeight, GetBlockTime()))
             return DoS(10, error("AcceptBlock() : contains a non-final transaction"));
+
+        MapPrevTx mapInputs(mapBlockTx);
+        map<uint256, CTxIndex> mapUnused;
+        bool fInvalid = false;
+        if (!tx.FetchInputs(txdb, mapUnused, false, false, mapInputs, fInvalid))
+        {
+            if (fInvalid)
+                return DoS(10, error("AcceptBlock() : FetchInputs found invalid tx"));
+            return error("AcceptBlock() : FetchInputs could not find input tx");
+        }
+
+        mpq nNet = tx.GetValueIn(mapInputs) - tx.GetValueOut();
+        nFees += GetTimeAdjustedValue(nNet, nHeight-tx.nRefHeight);
+
+        mapBlockTx[tx.GetHash()].second = tx;
+        mapBlockTx[tx.GetHash()].first.vSpent.resize(tx.vout.size());
+    }
 
     // Check that the block chain matches the known block chain up to a checkpoint
     if (!Checkpoints::CheckBlock(nHeight, hash))
@@ -2425,6 +2430,22 @@ bool CBlock::AcceptBlock()
                 return DoS(100, error("AcceptBlock() : block height mismatch in coinbase"));
         }
     }
+
+    std::map<CTxDestination, mpq> mapBudget;
+
+    mpq nIDAmount = GetInitialDistributionAmount(nHeight);
+    CBudget budgetID = GetInitialDistributionBudget(nHeight);
+    ApplyBudget(nIDAmount, budgetID, mapBudget);
+
+    mpq nPSAmount = GetPerpetualSubsidyAmount(nHeight);
+    CBudget budgetPS = GetPerpetualSubsidyBudget(nHeight);
+    ApplyBudget(nPSAmount, budgetPS, mapBudget);
+
+    CBudget budgetTF = GetTransactionFeeBudget(nHeight);
+    ApplyBudget(nFees, budgetTF, mapBudget);
+
+    if (!VerifyBudget(mapBudget, vtx, nHeight))
+        return DoS(100, error("AcceptBlock() : block does not meet budget requirements"));
 
     // Write block to history file
     if (!CheckDiskSpace(::GetSerializeSize(*this, SER_DISK, CLIENT_VERSION)))
