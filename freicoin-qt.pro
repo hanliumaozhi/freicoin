@@ -117,6 +117,7 @@ HEADERS += src/qt/freicoingui.h \
     src/qt/freicoinaddressvalidator.h \
     src/alert.h \
     src/addrman.h \
+    src/auxpow.h \
     src/base58.h \
     src/bignum.h \
     src/checkpoints.h \
@@ -187,6 +188,7 @@ SOURCES += src/qt/freicoin.cpp src/qt/freicoingui.cpp \
     src/qt/editaddressdialog.cpp \
     src/qt/freicoinaddressvalidator.cpp \
     src/alert.cpp \
+    src/auxpow.cpp \
     src/version.cpp \
     src/sync.cpp \
     src/util.cpp \

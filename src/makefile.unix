@@ -105,6 +105,7 @@ xLDFLAGS=$(LDHARDENING) $(LDFLAGS)
 
 OBJS= \
     obj/alert.o \
+    obj/auxpow.o \
     obj/version.o \
     obj/checkpoints.o \
     obj/netbase.o \
