@@ -4211,13 +4211,13 @@ CBlock* CreateNewBlock(CReserveKey& reservekey)
                     mapDependers[txin.prevout.hash].push_back(porphan);
                     porphan->setDependsOn.insert(txin.prevout.hash);
                     const CTransaction &txPrevIn = mempool.mapTx[txin.prevout.hash];
-                    nTotalIn += GetPresentValue(txPrevIn, txPrevIn.vout[txin.prevout.n], nHeight);
+                    nTotalIn += GetPresentValue(txPrevIn, txPrevIn.vout[txin.prevout.n], tx.nRefHeight);
                     continue;
                 }
 
                 int nConf = txindex.GetDepthInMainChain();
 
-                mpq nValueIn = GetPresentValue(txPrev, txPrev.vout[txin.prevout.n], nHeight);
+                mpq nValueIn = GetPresentValue(txPrev, txPrev.vout[txin.prevout.n], tx.nRefHeight);
                 nTotalIn += nValueIn;
 
                 dPriority += nTotalIn.get_d() * nConf;
