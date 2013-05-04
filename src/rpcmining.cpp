@@ -341,7 +341,6 @@ Value getblocktemplate(const Array& params, bool fHelp)
     result.push_back(Pair("previousblockhash", pblock->hashPrevBlock.GetHex()));
     result.push_back(Pair("transactions", transactions));
     result.push_back(Pair("coinbaseaux", aux));
-    int64_t coinbasevalue = 0;
     Object budget;
     BOOST_FOREACH(const CTxOut& txout, pblock->vtx[0].vout) {
         if ( txout != pblock->vtx[0].vout[0] ) {
@@ -353,9 +352,8 @@ Value getblocktemplate(const Array& params, bool fHelp)
                 script = txout.scriptPubKey.ToString();
             budget.push_back(Pair(script, (int64_t)txout.nValue));
         }
-        coinbasevalue += (int64_t)txout.nValue;
     }
-    result.push_back(Pair("coinbasevalue", coinbasevalue));
+    result.push_back(Pair("coinbasevalue", (int64_t)pblock->vtx[0].vout[0].nValue));
     result.push_back(Pair("budget", budget));
     result.push_back(Pair("target", hashTarget.GetHex()));
     result.push_back(Pair("mintime", (int64_t)pindexPrev->GetMedianTimePast()+1));
