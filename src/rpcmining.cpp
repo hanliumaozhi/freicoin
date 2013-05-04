@@ -207,6 +207,7 @@ Value getblocktemplate(const Array& params, bool fHelp)
             "  \"transactions\" : contents of non-coinbase transactions that should be included in the next block\n"
             "  \"coinbaseaux\" : data that should be included in coinbase\n"
             "  \"coinbasevalue\" : maximum allowable input to coinbase transaction, including the generation award and transaction fees\n"
+            "  \"budget\" : required outputs of the coinbase transaction"
             "  \"target\" : hash target\n"
             "  \"mintime\" : minimum timestamp appropriate for next block\n"
             "  \"curtime\" : current timestamp\n"
@@ -340,7 +341,22 @@ Value getblocktemplate(const Array& params, bool fHelp)
     result.push_back(Pair("previousblockhash", pblock->hashPrevBlock.GetHex()));
     result.push_back(Pair("transactions", transactions));
     result.push_back(Pair("coinbaseaux", aux));
-    result.push_back(Pair("coinbasevalue", (int64_t)pblock->vtx[0].vout[0].nValue));
+    int64_t coinbasevalue = 0;
+    Object budget;
+    BOOST_FOREACH(const CTxOut& txout, pblock->vtx[0].vout) {
+        if ( txout != pblock->vtx[0].vout[0] ) {
+            string script;
+            CTxDestination addr;
+            if ( ExtractDestination(txout.scriptPubKey, addr) )
+                script = CFreicoinAddress(addr).ToString();
+            else
+                script = txout.scriptPubKey.ToString();
+            budget.push_back(Pair(script, (int64_t)txout.nValue));
+        }
+        coinbasevalue += (int64_t)txout.nValue;
+    }
+    result.push_back(Pair("coinbasevalue", coinbasevalue));
+    result.push_back(Pair("budget", budget));
     result.push_back(Pair("target", hashTarget.GetHex()));
     result.push_back(Pair("mintime", (int64_t)pindexPrev->GetMedianTimePast()+1));
     result.push_back(Pair("mutable", aMutable));
