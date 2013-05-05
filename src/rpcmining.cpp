@@ -341,20 +341,21 @@ Value getblocktemplate(const Array& params, bool fHelp)
     result.push_back(Pair("previousblockhash", pblock->hashPrevBlock.GetHex()));
     result.push_back(Pair("transactions", transactions));
     result.push_back(Pair("coinbaseaux", aux));
-    Object budget;
+    Array aBudget;
     BOOST_FOREACH(const CTxOut& txout, pblock->vtx[0].vout) {
         if ( txout != pblock->vtx[0].vout[0] ) {
-            string script;
+            Object entry;
             CTxDestination addr;
             if ( ExtractDestination(txout.scriptPubKey, addr) )
-                script = CFreicoinAddress(addr).ToString();
+                entry.push_back(Pair("address", CFreicoinAddress(addr).ToString()));
             else
-                script = txout.scriptPubKey.ToString();
-            budget.push_back(Pair(script, (int64_t)txout.nValue));
+                entry.push_back(Pair("script", txout.scriptPubKey.ToString()));
+            entry.push_back(Pair("value", (int64_t)txout.nValue));
+            aBudget.push_back(entry);
         }
     }
     result.push_back(Pair("coinbasevalue", (int64_t)pblock->vtx[0].vout[0].nValue));
-    result.push_back(Pair("budget", budget));
+    result.push_back(Pair("budget", aBudget));
     result.push_back(Pair("target", hashTarget.GetHex()));
     result.push_back(Pair("mintime", (int64_t)pindexPrev->GetMedianTimePast()+1));
     result.push_back(Pair("mutable", aMutable));
