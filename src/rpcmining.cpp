@@ -11,6 +11,8 @@
 using namespace json_spirit;
 using namespace std;
 
+extern void ScriptPubKeyToJSON(const CScript& scriptPubKey, Object& out);
+
 Value getgenerate(const Array& params, bool fHelp)
 {
     if (fHelp || params.size() != 0)
@@ -344,12 +346,9 @@ Value getblocktemplate(const Array& params, bool fHelp)
     Array aBudget;
     BOOST_FOREACH(const CTxOut& txout, pblock->vtx[0].vout) {
         if ( txout != pblock->vtx[0].vout[0] ) {
-            Object entry;
-            CTxDestination addr;
-            if ( ExtractDestination(txout.scriptPubKey, addr) )
-                entry.push_back(Pair("address", CFreicoinAddress(addr).ToString()));
-            else
-                entry.push_back(Pair("script", txout.scriptPubKey.ToString()));
+            Object entry, script;
+            ScriptPubKeyToJSON(txout.scriptPubKey, script);
+            entry.push_back(Pair("scriptPubKey", script));
             entry.push_back(Pair("value", (int64_t)txout.nValue));
             aBudget.push_back(entry);
         }
