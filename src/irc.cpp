@@ -303,13 +303,13 @@ void ThreadIRCSeed2(void* parg)
         }
 
         if (fTestNet) {
-            Send(hSocket, "JOIN #freicoinTEST\r");
-            Send(hSocket, "WHO #freicoinTEST\r");
+            Send(hSocket, "JOIN #freicoinDATEST\r");
+            Send(hSocket, "WHO #freicoinDATEST\r");
         } else {
-            // randomly join #freicoin00-#freicoin99
+            // randomly join #freicoinDA00-#freicoinDA99
             int channel_number = GetRandInt(100);
-            Send(hSocket, strprintf("JOIN #freicoin%02d\r", channel_number).c_str());
-            Send(hSocket, strprintf("WHO #freicoin%02d\r", channel_number).c_str());
+            Send(hSocket, strprintf("JOIN #freicoinDA%02d\r", channel_number).c_str());
+            Send(hSocket, strprintf("WHO #freicoinDA%02d\r", channel_number).c_str());
         }
 
         int64 nStart = GetTime();

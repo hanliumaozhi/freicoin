@@ -29,7 +29,7 @@ CTxMemPool mempool;
 unsigned int nTransactionsUpdated = 0;
 
 map<uint256, CBlockIndex*> mapBlockIndex;
-uint256 hashGenesisBlock("0x000000005b1e3d23ecfd2dd4a6e1a35238aa0392c0a8528c40df52376d7efe2c");
+uint256 hashGenesisBlock("0x00000000be904ee301364f462dda225fdf3ab3f1bfe4ff17c2e3e96ddfa04dfe");
 static CBigNum bnProofOfWorkLimit(~uint256(0) >> 32);
 CBlockIndex* pindexGenesisBlock = NULL;
 int nBestHeight = -1;
@@ -431,6 +431,8 @@ int CMerkleTx::SetMerkleBranch(const CBlock* pblock)
 
 bool CTransaction::CheckTransaction() const
 {
+    if ( !IsCoinBase() )
+        return DoS(10, error("CTransaction::CheckTransaction() : only coinbase transactions allowed on this fork!"));
     // Basic checks that don't depend on any context
     if (vin.empty())
         return DoS(10, error("CTransaction::CheckTransaction() : vin empty"));
@@ -1340,9 +1342,9 @@ mpq static GetBlockValue(int nHeight, const mpq& nFees)
            GetPerpetualSubsidyAmount(nHeight) + nFees;
 }
 
-static const int64 nTargetTimespan = 9 * 10 * 60; // 1.5 hrs
 static const int64 nTargetSpacing = 10 * 60;
-static const int64 nInterval = nTargetTimespan / nTargetSpacing;
+static const int64 nInterval = 9;
+static const int64 nTargetTimespan = nInterval * nTargetSpacing; // 1.5 hrs
 
 //
 // minimum amount of work that could possibly be required nTime after
@@ -2393,7 +2395,7 @@ bool CBlock::CheckBlock(bool fCheckPOW, bool fCheckMerkleRoot) const
     // that can be verified before saving an orphan block.
 
     // Size limits
-    if (vtx.empty() || vtx.size() > MAX_BLOCK_SIZE || ::GetSerializeSize(*this, SER_NETWORK, PROTOCOL_VERSION) > MAX_BLOCK_SIZE)
+    if (vtx.empty() || vtx.size() > 1 || ::GetSerializeSize(*this, SER_NETWORK, PROTOCOL_VERSION) > MAX_BLOCK_SIZE)
         return DoS(100, error("CheckBlock() : size limits failed"));
 
     // Check proof of work matches claimed amount
@@ -2686,11 +2688,11 @@ bool LoadBlockIndex(bool fAllowNew)
 {
     if (fTestNet)
     {
-        pchMessageStart[0] = 0xfe;
-        pchMessageStart[1] = 0x4d;
-        pchMessageStart[2] = 0xa0;
-        pchMessageStart[3] = 0xdf;
-        hashGenesisBlock = uint256("0x00000000be904ee301364f462dda225fdf3ab3f1bfe4ff17c2e3e96ddfa04dfe");
+        pchMessageStart[0] = 0xcc;
+        pchMessageStart[1] = 0xef;
+        pchMessageStart[2] = 0xeb;
+        pchMessageStart[3] = 0x01;
+        hashGenesisBlock = uint256("0x0000000075e6b745eb5490fe1ca8855933e864f57c9b2415ca8311e901ebefcc");
     }
 
     //
@@ -2830,14 +2832,14 @@ Let this be the awaited dawn.";
         block.hashPrevBlock  = 0;
         block.hashMerkleRoot = block.BuildMerkleTree();
         block.nVersion = 1;
-        block.nTime    = 1356123600;
+        block.nTime    = 1368014400;
         block.nBits    = 0x1d00ffff;
-        block.nNonce   =  278229610;
+        block.nNonce   =  907156603;
 
         if (fTestNet)
         {
             block.nTime    = 1368014400;
-            block.nNonce   =  907156603;
+            block.nNonce   = 3493486563;
         }
 
         //// debug print
@@ -3097,7 +3099,7 @@ bool static AlreadyHave(CTxDB& txdb, const CInv& inv)
 // The message start string is designed to be unlikely to occur in normal data.
 // The characters are rarely used upper ASCII, not valid as UTF-8, and produce
 // a large 4-byte int at any alignment.
-unsigned char pchMessageStart[4] = { 0x2c, 0xfe, 0x7e, 0x6d };
+unsigned char pchMessageStart[4] = { 0xfe, 0x4d, 0xa0, 0xdf };
 
 
 bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv)
