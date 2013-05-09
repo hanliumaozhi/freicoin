@@ -1340,7 +1340,7 @@ mpq static GetBlockValue(int nHeight, const mpq& nFees)
            GetPerpetualSubsidyAmount(nHeight) + nFees;
 }
 
-static const int64 nTargetTimespan = 6 * 10 * 60; // 1.5 hrs
+static const int64 nTargetTimespan = 9 * 10 * 60; // 1.5 hrs
 static const int64 nTargetSpacing = 10 * 60;
 static const int64 nInterval = nTargetTimespan / nTargetSpacing;
 
