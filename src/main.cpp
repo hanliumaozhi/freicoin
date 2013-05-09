@@ -1480,15 +1480,15 @@ unsigned int static GetNextWorkRequired(const CBlockIndex* pindexLast, const CBl
         if (nActualTimespan > nTargetTimespan*4)
             nActualTimespan = nTargetTimespan*4;
 
-        dAdjustmentFactor = i64_to_mpq(nActualTimespan) /
-                            i64_to_mpq(nTargetTimespan);
+        dAdjustmentFactor = i64_to_mpq(nTargetTimespan) /
+                            i64_to_mpq(nActualTimespan);
     }
 
     // Retarget
     CBigNum bnNew;
     bnNew.SetCompact(pindexLast->nBits);
-    bnNew *= mpz_to_i64(dAdjustmentFactor.get_num());
-    bnNew /= mpz_to_i64(dAdjustmentFactor.get_den());
+    bnNew *= mpz_to_i64(dAdjustmentFactor.get_den());
+    bnNew /= mpz_to_i64(dAdjustmentFactor.get_num());
 
     if (bnNew > bnProofOfWorkLimit)
         bnNew = bnProofOfWorkLimit;
