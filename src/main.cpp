@@ -2686,11 +2686,11 @@ bool LoadBlockIndex(bool fAllowNew)
 {
     if (fTestNet)
     {
-        pchMessageStart[0] = 0x5e;
-        pchMessageStart[1] = 0xd6;
-        pchMessageStart[2] = 0x7c;
-        pchMessageStart[3] = 0xf3;
-        hashGenesisBlock = uint256("0x00000000a52504ffe3420a43bd385ef24f81838921a903460b235d95f37cd65e");
+        pchMessageStart[0] = 0xfe;
+        pchMessageStart[1] = 0x4d;
+        pchMessageStart[2] = 0xa0;
+        pchMessageStart[3] = 0xdf;
+        hashGenesisBlock = uint256("0x00000000be904ee301364f462dda225fdf3ab3f1bfe4ff17c2e3e96ddfa04dfe");
     }
 
     //
@@ -2836,8 +2836,8 @@ Let this be the awaited dawn.";
 
         if (fTestNet)
         {
-            block.nTime    = 1356123600;
-            block.nNonce   = 3098244593;
+            block.nTime    = 1368014400;
+            block.nNonce   =  907156603;
         }
 
         //// debug print
