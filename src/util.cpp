@@ -1121,13 +1121,13 @@ void PrintExceptionContinue(std::exception* pex, const char* pszThread)
 boost::filesystem::path GetDefaultDataDir()
 {
     namespace fs = boost::filesystem;
-    // Windows < Vista: C:\Documents and Settings\Username\Application Data\Freicoin
-    // Windows >= Vista: C:\Users\Username\AppData\Roaming\Freicoin
-    // Mac: ~/Library/Application Support/Freicoin
-    // Unix: ~/.freicoin
+    // Windows < Vista: C:\Documents and Settings\Username\Application Data\Freicoin-DiffAdjust
+    // Windows >= Vista: C:\Users\Username\AppData\Roaming\Freicoin-DiffAdjust
+    // Mac: ~/Library/Application Support/Freicoin-DiffAdjust
+    // Unix: ~/.freicoin-diffadjust
 #ifdef WIN32
     // Windows
-    return GetSpecialFolderPath(CSIDL_APPDATA) / "Freicoin";
+    return GetSpecialFolderPath(CSIDL_APPDATA) / "Freicoin-DiffAdjust";
 #else
     fs::path pathRet;
     char* pszHome = getenv("HOME");
@@ -1139,10 +1139,10 @@ boost::filesystem::path GetDefaultDataDir()
     // Mac
     pathRet /= "Library/Application Support";
     fs::create_directory(pathRet);
-    return pathRet / "Freicoin";
+    return pathRet / "Freicoin-DiffAdjust";
 #else
     // Unix
-    return pathRet / ".freicoin";
+    return pathRet / ".freicoin-diffadjust";
 #endif
 #endif
 }
