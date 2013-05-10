@@ -1451,9 +1451,9 @@ unsigned int static GetNextWorkRequired(const CBlockIndex* pindexLast, const CBl
         int64_t vFilteredTime = 0;
         for ( idx=0; idx<WINDOW; ++idx )
             vFilteredTime += (int64_t)kFilterCoeff[idx] * (int64_t)vTimeDelta[idx];
-        mpq dFilteredInterval = i64_to_mpq(vFilteredTime) / kTwoToTheThirtyOne;
+        mpq dFilteredInterval = i64_to_mpq(-vFilteredTime) / kTwoToTheThirtyOne;
 
-        dAdjustmentFactor = kOne + kGain * (dFilteredInterval - kTargetInterval) / kTargetInterval;
+        dAdjustmentFactor = kOne - kGain * (dFilteredInterval - kTargetInterval) / kTargetInterval;
         if ( dAdjustmentFactor > kLimiterUp )
             dAdjustmentFactor = kLimiterUp;
         else if ( dAdjustmentFactor < kLimiterDown )
