@@ -1,4 +1,4 @@
-Freicoin 0.0.2
+Freicoin 0.0.2-2
 
 Copyright (c) 2009-2012 Bitcoin Developers
 Distributed under the MIT/X11 software license, see the accompanying

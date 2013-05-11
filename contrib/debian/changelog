@@ -1,3 +1,35 @@
+freicoin (0.0.2~precise3) precise; urgency=high
+
+  [Mark Friedenbach]
+    * Add the new difficulty adjustment algorithm, which replaces the simple
+      average over 2016 blocks with a faster-acting 144-tap Parks and
+      McClellan FIR filter, and adjustments every 9 blocks with a gain of
+      0.1025 and limiter of 1.055.
+    * Prepare for deployment of difficulty adjustment filter to production
+      network by adding a threshold block after which the new difficulty
+      adjustment algorithm takes over, for both mainnet and testnet.
+    * Added Python simulator of new difficulty adjustment algorithm.
+    * Fixed two related bugs in the freicoin "accounts" system. First, the
+      'move' RPC command now generates AccountingEntry records with the
+      current reference height rather than refheight=0. Second, the
+      'listaccounts' RPC command properly time-value adjusts AccountingEntry
+      records.
+    * Fix unwanted transaction de-prioritization. Now calculates both inputs
+      and outputs of a transaction based on the transaction's reference
+      height, as opposed to the current block height, which was previously
+      being used for the inputs. This was resulting in smaller (or even
+      negative) fees for the purposes of priority calculation, thereby
+      resulting in transactions that had trouble getting on the block chain.
+    * Change nVersion on Freicoin Foundation addresses to testnet format, so
+      that budgets validate correctly. This enables mining on testnet.
+    * Modified output of 'getblocktemplate' RPC command to include a 'budget'
+      array specifying budgetary requirements.
+
+  [Clark Minor]
+    * Fix forking bug due to truncation of initial distribution calculation.
+
+ -- Mark Friedenbach <mark@monetize.io>  Sun, 11 May 2013 12:00:00 -0000
+
 freicoin (0.0.2~precise1) precise; urgency=high
 
   [Mark Friedenbach]
@@ -7,7 +39,7 @@ freicoin (0.0.2~precise1) precise; urgency=high
     * New translations and updates of existing translations.
     * Improved artwork and GUI tweaks.
 
- -- Mark Friedenbach <mark@monetize.io>  Sun, 10 Feb 2012 12:00:00 -0000
+ -- Mark Friedenbach <mark@monetize.io>  Sun, 10 Feb 2013 12:00:00 -0000
 
 freicoin (0.0.1~precise4) precise; urgency=high
 
