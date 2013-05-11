@@ -1377,7 +1377,7 @@ unsigned int static GetNextWorkRequired(const CBlockIndex* pindexLast, const CBl
 
     #define WINDOW 144
     static mpq kOne = mpq(1);
-    static mpq kTwoToTheThirtyOne = mpq(2147483648);
+    static mpq kTwoToTheThirtyOne = mpq("2147483648");
     static mpq kGain = mpq(41, 400);       // 0.025
     static mpq kLimiterUp = mpq(211, 200); // 1.055
     static mpq kLimiterDown = mpq(200, 211);
@@ -1451,7 +1451,7 @@ unsigned int static GetNextWorkRequired(const CBlockIndex* pindexLast, const CBl
         int64_t vFilteredTime = 0;
         for ( idx=0; idx<WINDOW; ++idx )
             vFilteredTime += (int64_t)kFilterCoeff[idx] * (int64_t)vTimeDelta[idx];
-        mpq dFilteredInterval = i64_to_mpq(-vFilteredTime) / kTwoToTheThirtyOne;
+        mpq dFilteredInterval = i64_to_mpq(vFilteredTime) / kTwoToTheThirtyOne;
 
         dAdjustmentFactor = kOne - kGain * (dFilteredInterval - kTargetInterval) / kTargetInterval;
         if ( dAdjustmentFactor > kLimiterUp )
