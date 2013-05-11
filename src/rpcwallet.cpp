@@ -574,6 +574,7 @@ Value movecmd(const Array& params, bool fHelp)
         throw JSONRPCError(RPC_DATABASE_ERROR, "database error");
 
     int64 nNow = GetAdjustedTime();
+    int nRefHeight = nBestHeight;
 
     // Debit
     CAccountingEntry debit;
@@ -581,6 +582,7 @@ Value movecmd(const Array& params, bool fHelp)
     debit.strAccount = strFrom;
     debit.nCreditDebit = -nAmount;
     debit.nTime = nNow;
+    debit.nRefHeight = nRefHeight;
     debit.strOtherAccount = strTo;
     debit.strComment = strComment;
     walletdb.WriteAccountingEntry(debit);
@@ -591,6 +593,7 @@ Value movecmd(const Array& params, bool fHelp)
     credit.strAccount = strTo;
     credit.nCreditDebit = nAmount;
     credit.nTime = nNow;
+    credit.nRefHeight = nRefHeight;
     credit.strOtherAccount = strFrom;
     credit.strComment = strComment;
     walletdb.WriteAccountingEntry(credit);
@@ -1062,6 +1065,8 @@ Value listaccounts(const Array& params, bool fHelp)
     if (params.size() > 0)
         nMinDepth = params[0].get_int();
 
+    int nHeight = nBestHeight;
+
     map<string, mpq> mapAccountBalances;
     BOOST_FOREACH(const PAIRTYPE(CTxDestination, string)& entry, pwalletMain->mapAddressBook) {
         if (IsMine(*pwalletMain, entry.first)) // This address belongs to me
@@ -1092,7 +1097,7 @@ Value listaccounts(const Array& params, bool fHelp)
     list<CAccountingEntry> acentries;
     CWalletDB(pwalletMain->strWalletFile).ListAccountCreditDebit("*", acentries);
     BOOST_FOREACH(const CAccountingEntry& entry, acentries)
-        mapAccountBalances[entry.strAccount] += entry.nCreditDebit;
+        mapAccountBalances[entry.strAccount] += GetTimeAdjustedValue(entry.nCreditDebit, nHeight - entry.nRefHeight);
 
     Object ret;
     BOOST_FOREACH(const PAIRTYPE(string, mpq)& accountBalance, mapAccountBalances) {
