@@ -969,8 +969,15 @@ bool static VerifyBudget(const std::map<CTxDestination, mpq>& mapBudget,
 mpq static GetInitialDistributionAmount(int nHeight)
 {
     mpq nSubsidy = 0;
-    if ( nHeight < EQ_HEIGHT )
-        nSubsidy = TITHE_AMOUNT + (EQ_HEIGHT-nHeight) * INITIAL_SUBSIDY / EQ_HEIGHT;
+    if ( !fTestNet && nHeight < DIFF_FILTER_THRESHOLD ) {
+        mpz zInitialSubsidy = INITIAL_SUBSIDY.get_num();
+        if ( nHeight < EQ_HEIGHT )
+            nSubsidy = TITHE_AMOUNT + (EQ_HEIGHT-nHeight) * zInitialSubsidy / EQ_HEIGHT;
+    }
+    else {
+        if ( nHeight < EQ_HEIGHT )
+            nSubsidy = TITHE_AMOUNT + (EQ_HEIGHT-nHeight) * INITIAL_SUBSIDY / EQ_HEIGHT;
+    }
     return nSubsidy;
 }
 
