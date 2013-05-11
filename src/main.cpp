@@ -1341,8 +1341,10 @@ mpq static GetBlockValue(int nHeight, const mpq& nFees)
 }
 
 static const int64 nTargetSpacing = 10 * 60;
-static const int64 nInterval = 9;
-static const int64 nTargetTimespan = nInterval * nTargetSpacing; // 1.5 hrs
+static const int64 nOriginalInterval = 2016;
+static const int64 nFilteredInterval =    9;
+static const int64 nOriginalTargetTimespan = nOriginalInterval * nTargetSpacing; // two weeks
+static const int64 nFilteredTargetTimespan = nFilteredInterval * nTargetSpacing; // 1.5 hrs
 
 //
 // minimum amount of work that could possibly be required nTime after
@@ -1362,7 +1364,7 @@ unsigned int ComputeMinWork(unsigned int nBase, int64 nTime)
         // Maximum 400% adjustment...
         bnResult *= 4;
         // ... in best-case exactly 4-times-normal target time
-        nTime -= nTargetTimespan*4;
+        nTime -= nOriginalTargetTimespan*4;
     }
     if (bnResult > bnProofOfWorkLimit)
         bnResult = bnProofOfWorkLimit;
@@ -1411,8 +1413,20 @@ unsigned int static GetNextWorkRequired(const CBlockIndex* pindexLast, const CBl
     if (pindexLast == NULL)
         return nProofOfWorkLimit;
 
+    bool fUseFilter =
+         (fTestNet && pindexLast->nHeight>=(DIFF_FILTER_THRESHOLD_TESTNET-1)) ||
+        (!fTestNet && pindexLast->nHeight>=(DIFF_FILTER_THRESHOLD-1));
+
+    int64 nInterval       = nFilteredInterval;
+    int64 nTargetTimespan = nFilteredTargetTimespan;
+    if ( !fUseFilter ) {
+        nInterval       = nOriginalInterval;
+        nTargetTimespan = nOriginalTargetTimespan;
+    }
+
     // Only change once per interval
-    if ((pindexLast->nHeight+1) % nInterval != 0)
+    if (  (fUseFilter && (pindexLast->nHeight+1) % nInterval != 0) ||
+         (!fUseFilter && (pindexLast->nHeight+1) % 2016 != 0))
     {
         // Special difficulty rule for testnet:
         if (fTestNet)
@@ -1436,7 +1450,7 @@ unsigned int static GetNextWorkRequired(const CBlockIndex* pindexLast, const CBl
 
     mpq dAdjustmentFactor;
 
-    if ( true ) {
+    if ( fUseFilter ) {
         int32_t vTimeDelta[WINDOW];
 
         size_t idx = 0;
@@ -2553,6 +2567,9 @@ bool ProcessBlock(CNode* pfrom, CBlock* pblock)
                 pfrom->Misbehaving(100);
             return error("ProcessBlock() : block with timestamp before last checkpoint");
         }
+#if 0
+        // Now that we are using a FIR filter (see above) this is no longer
+        // a straightforward calculation.
         CBigNum bnNewBlock;
         bnNewBlock.SetCompact(pblock->nBits);
         CBigNum bnRequired;
@@ -2563,6 +2580,7 @@ bool ProcessBlock(CNode* pfrom, CBlock* pblock)
                 pfrom->Misbehaving(100);
             return error("ProcessBlock() : block with too little proof-of-work");
         }
+#endif
     }
 
 
